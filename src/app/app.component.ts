@@ -3,9 +3,8 @@ import { AmbientLight, Camera, DirectionalLight, Object3D, PerspectiveCamera, Ra
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +23,8 @@ export class AppComponent implements OnInit {
   private raycaster : Raycaster;
 
   //test me daddy
+  private composer? : EffectComposer;
+  private outlinePass? : OutlinePass;
 
   constructor () {  
     this.scene = new Scene();
@@ -34,7 +35,6 @@ export class AppComponent implements OnInit {
     this.camera.position.setZ(5);
 
     this.setupLights();
-
   }
   
   ngOnInit(): void {
@@ -52,6 +52,14 @@ export class AppComponent implements OnInit {
 
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.update();
+
+    //test
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.outlinePass = new OutlinePass( new Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
+    this.outlinePass.visibleEdgeColor.setHex(0xb00020);
+    this.outlinePass.edgeStrength = 4;
+    this.composer.addPass(this.outlinePass);
     
     this.loader.load( 'assets/oil_purifier_DE_second.glb', function ( gltf ) {
       that.model = gltf.scene;
@@ -65,25 +73,33 @@ export class AppComponent implements OnInit {
       console.error( error );
     } );
 
+    document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event), false );
     document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event), false );
   }
 
   private onDocumentMouseDown( event: any ) {
+    alert (this.outlinePass?.selectedObjects[0].name);
+  }
+
+  private onDocumentMouseHover( event: any ) {
     event.preventDefault();
     const mouseX = ( event.clientX / window.innerWidth ) * 2 - 1;
     const mouseY = - ( event.clientY / window.innerHeight ) * 2 + 1;
   
     this.raycaster.setFromCamera({ x: mouseX, y: mouseY}, this.camera);
 
-    if (!this.model) {
+    if (!this.model || !this.outlinePass) {
       return;
     }
 
     const intersects = this.raycaster.intersectObjects( this.model.children );
 
     if ( intersects.length > 0 ) {
-      console.log(intersects.map(o => o.object.name).reduce((prev, curr) => curr += " " + prev));
-      const topObj = intersects[intersects.length-1];
+      // console.log(intersects.map(o => o.object.name).reduce((prev, curr) => curr += " " + prev));
+      const topObj = intersects[0];
+      this.outlinePass.selectedObjects = [topObj.object];
+    } else {
+      this.outlinePass.selectedObjects = [];
     }
 }
 
@@ -118,6 +134,6 @@ export class AppComponent implements OnInit {
     requestAnimationFrame(this.animate.bind(this));
     
     this.controls?.update();
-    this.renderer?.render(this.scene, this.camera);
+    this.composer?.render();
   }
 }
