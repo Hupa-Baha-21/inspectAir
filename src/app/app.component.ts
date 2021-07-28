@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { AmbientLight, Camera, DirectionalLight, Object3D, PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
+import { AmbientLight, Camera, DirectionalLight, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, Vector2, Vector3, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 
 @Component({
   selector: 'app-root',
@@ -15,14 +19,17 @@ export class AppComponent implements OnInit {
   private camera : Camera;
 
   private model? : Object3D;
-  private angle = 0;
 
   private controls? : OrbitControls;
+  private raycaster : Raycaster;
+
+  //test me daddy
 
   constructor () {  
     this.scene = new Scene();
     this.loader = new GLTFLoader();
     this.camera = new PerspectiveCamera(75, window.innerWidth/window.innerHeight, .1, 20);
+    this.raycaster = new Raycaster();
 
     this.camera.position.setZ(5);
 
@@ -57,7 +64,28 @@ export class AppComponent implements OnInit {
     }, function ( error ) {
       console.error( error );
     } );
+
+    document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event), false );
   }
+
+  private onDocumentMouseDown( event: any ) {
+    event.preventDefault();
+    const mouseX = ( event.clientX / window.innerWidth ) * 2 - 1;
+    const mouseY = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  
+    this.raycaster.setFromCamera({ x: mouseX, y: mouseY}, this.camera);
+
+    if (!this.model) {
+      return;
+    }
+
+    const intersects = this.raycaster.intersectObjects( this.model.children );
+
+    if ( intersects.length > 0 ) {
+      console.log(intersects.map(o => o.object.name).reduce((prev, curr) => curr += " " + prev));
+      const topObj = intersects[intersects.length-1];
+    }
+}
 
   private setupLights() {
     const light = new AmbientLight(0xffffff);
