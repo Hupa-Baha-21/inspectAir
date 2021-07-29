@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AmbientLight, Camera, DirectionalLight, Group, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, Vector2, Vector3, WebGLRenderer } from 'three';
+import { AmbientLight, Camera, DirectionalLight, DirectionalLightHelper, EquirectangularReflectionMapping, Group, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector2, Vector3, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
     
     this.renderer = new WebGLRenderer({
       canvas: canvas,
-      alpha: true,
+      // alpha: true,
       // antialias: true
     });
     this.renderer.outputEncoding = sRGBEncoding;
@@ -62,7 +62,6 @@ export class AppComponent implements OnInit {
     this.outlinePass.visibleEdgeColor.setHex(0xb00020);
     this.outlinePass.edgeStrength = 4;
     this.composer.addPass(this.outlinePass);
-    
     
     this.loader.load( 'assets/oil_purifier_DE_second.glb', function ( gltf ) {
       that.model = gltf.scene;
@@ -117,7 +116,7 @@ export class AppComponent implements OnInit {
       const topObj = intersects[0].object;
 
       if (topObj.parent !== this.model) {
-        this.outlinePass.selectedObjects = topObj.parent?.children ?? [];
+        this.outlinePass.selectedObjects = [topObj.parent ?? topObj];
       } else {
         this.outlinePass.selectedObjects = [topObj];
       }
@@ -129,20 +128,20 @@ export class AppComponent implements OnInit {
   private setupLights() {
     const light = new AmbientLight(0xffffff);
     const directionalLight1 = new DirectionalLight( 0xffffff, 0.7 );
-    directionalLight1.position.set(0, 1.1, 0);
+    directionalLight1.position.set(0, 2, 0);
     directionalLight1.lookAt(0, 0, 0);
     
     const directionalLight2 = new DirectionalLight( 0xffffff, 0.5 );
-    directionalLight2.position.set(1, 0, 0);
+    directionalLight2.position.set(2, 0, 0);
     directionalLight2.lookAt(0, 0, 0);
     const directionalLight3 = new DirectionalLight( 0xffffff, 0.5 );
-    directionalLight3.position.set(-1, 0, 0);
+    directionalLight3.position.set(-2, 0, 0);
     directionalLight3.lookAt(0, 0, 0);
     const directionalLight4 = new DirectionalLight( 0xffffff, 0.5 );
-    directionalLight4.position.set(0, 0, 1);
+    directionalLight4.position.set(0, 0, 2.5);
     directionalLight4.lookAt(0, 0, 0);
     const directionalLight5 = new DirectionalLight( 0xffffff, 0.5 );
-    directionalLight5.position.set(0, 0, -1);
+    directionalLight5.position.set(0, 0, -2);
     directionalLight5.lookAt(0, 0, 0);
     
     this.scene.add(light);
