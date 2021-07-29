@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AmbientLight, Camera, DirectionalLight, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, Vector2, Vector3, WebGLRenderer } from 'three';
+import { AmbientLight, Camera, DirectionalLight, Group, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, Vector2, Vector3, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -25,6 +25,8 @@ export class AppComponent implements OnInit {
   //test me daddy
   private composer? : EffectComposer;
   private outlinePass? : OutlinePass;
+
+  private parts? : Object3D[];
 
   constructor () {  
     this.scene = new Scene();
@@ -61,12 +63,15 @@ export class AppComponent implements OnInit {
     this.outlinePass.edgeStrength = 4;
     this.composer.addPass(this.outlinePass);
     
+    
     this.loader.load( 'assets/oil_purifier_DE_second.glb', function ( gltf ) {
       that.model = gltf.scene;
       that.model.position.setY(-1.5);
       
       that.scene.add(that.model);
       that.animate();
+      that.parts = that.extractChildren(that.model);
+      
     }, function ( xhr ) {
       console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
     }, function ( error ) {
@@ -75,6 +80,20 @@ export class AppComponent implements OnInit {
 
     document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event), false );
     document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event), false );
+  }
+
+  private extractChildren(model : Object3D) : Object3D[] {
+    let children : Object3D[] = [];
+
+    model.children.forEach(child => {
+      if (child.children.length) {
+        children = children.concat(this.extractChildren(child));
+      } else {
+        children.push(child);
+      }
+    });
+
+    return children;
   }
 
   private onDocumentMouseDown( event: any ) {
@@ -88,16 +107,20 @@ export class AppComponent implements OnInit {
   
     this.raycaster.setFromCamera({ x: mouseX, y: mouseY}, this.camera);
 
-    if (!this.model || !this.outlinePass) {
+    if (!this.model || !this.outlinePass || !this.parts) {
       return;
     }
 
-    const intersects = this.raycaster.intersectObjects( this.model.children );
+    const intersects = this.raycaster.intersectObjects( this.parts );
 
     if ( intersects.length > 0 ) {
-      // console.log(intersects.map(o => o.object.name).reduce((prev, curr) => curr += " " + prev));
-      const topObj = intersects[0];
-      this.outlinePass.selectedObjects = [topObj.object];
+      const topObj = intersects[0].object;
+
+      if (topObj.parent !== this.model) {
+        this.outlinePass.selectedObjects = topObj.parent?.children ?? [];
+      } else {
+        this.outlinePass.selectedObjects = [topObj];
+      }
     } else {
       this.outlinePass.selectedObjects = [];
     }
