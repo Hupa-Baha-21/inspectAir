@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AmbientLight, Camera, DirectionalLight, DirectionalLightHelper, EquirectangularReflectionMapping, Group, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector2, Vector3, WebGLRenderer } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, Camera, DirectionalLight, DirectionalLightHelper, EquirectangularReflectionMapping, FloatType, Group, LinearToneMapping, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, sRGBEncoding, TextureLoader, Vector2, Vector3, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
@@ -37,6 +38,27 @@ export class AppComponent implements OnInit {
     this.camera.position.setZ(5);
 
     this.setupLights();
+
+    new TextureLoader()
+      .load('assets/env.jpg', texture => {
+        texture.mapping = EquirectangularReflectionMapping;
+
+        this.scene.background = texture;
+      });
+    // // new TextureLoader()
+    // //   .load('assets/light.jpg', texture => {
+    // //     texture.mapping = EquirectangularReflectionMapping;
+
+    // //     // this.scene.background = texture;
+    // //     this.scene.environment = texture;
+    // //   });
+    new RGBELoader()
+      .setDataType(FloatType)
+      .load('assets/light.hdr', texture => {
+        texture.mapping = EquirectangularReflectionMapping;
+
+        this.scene.environment = texture;
+      });
   }
   
   ngOnInit(): void {
@@ -45,12 +67,14 @@ export class AppComponent implements OnInit {
     
     this.renderer = new WebGLRenderer({
       canvas: canvas,
-      // alpha: true,
+      alpha: true,
       // antialias: true
     });
     this.renderer.outputEncoding = sRGBEncoding;
     this.renderer.setPixelRatio(3);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.8;
 
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.update();
@@ -126,7 +150,7 @@ export class AppComponent implements OnInit {
 }
 
   private setupLights() {
-    const light = new AmbientLight(0xffffff);
+    const light = new AmbientLight(0xffffff, 1.5);
     const directionalLight1 = new DirectionalLight( 0xffffff, 0.7 );
     directionalLight1.position.set(0, 2, 0);
     directionalLight1.lookAt(0, 0, 0);
@@ -145,11 +169,11 @@ export class AppComponent implements OnInit {
     directionalLight5.lookAt(0, 0, 0);
     
     this.scene.add(light);
-    this.scene.add(directionalLight1);
-    this.scene.add(directionalLight2);
-    this.scene.add(directionalLight3);
-    this.scene.add(directionalLight4);
-    this.scene.add(directionalLight5);
+    // this.scene.add(directionalLight1);
+    // this.scene.add(directionalLight2);
+    // this.scene.add(directionalLight3);
+    // this.scene.add(directionalLight4);
+    // this.scene.add(directionalLight5);
   }
 
   private animate() {
