@@ -1,9 +1,9 @@
-<div class="top-container">
+<div class="top-container" *ngIf="this.isVisible">
     <div class="bottom details-container" dir="rtl">
         <div class="details">
-            <h3 class="title">דבר</h3>
-            <p class="text">לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית קולהע צופעט למרקוח איבן איף, ברומץ כלרשט מיחוצים. קלאצי לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית. סת אלמנקום ניסי נון ניבאה. דס איאקוליס וולופטה דיאם. וסטיבולום אט דולור, קראס אגת לקטוס וואל אאוגו וסטיבולום סוליסי טידום בעליק. להאמית קרהשק סכעיט דז מא, מנכם למטכין נשואי מנורךלורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית קולהע צופעט למרקוח איבן איף, ברומץ כלרשט מיחוצים. קלאצי לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית. סת אלמנקום ניסי נון ניבאה. דס איאקוליס וולופטה דיאם. וסטיבולום אט דולור, קראס אגת לקטוס וואל אאוגו וסטיבולום סוליסי טידום בעליק. להאמית קרהשק סכעיט דז מא, מנכם למטכין נשואי מנורך</p>
+            <h3 class="title" (change)="this.isVisible=true">{{this.title}}</h3>
+            <p class="text" (change)="this.isVisible=true">{{this.text}}</p>
         </div>
-        <button class="close-button"><i class="bi bi-x"></i></button>
+        <button class="close-button" (click)="this.isVisible = false"><i class="bi bi-x"></i></button>
     </div>
 </div>

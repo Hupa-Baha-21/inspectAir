@@ -28,6 +28,11 @@ export class AppComponent implements OnInit {
 
   private parts? : Object3D[];
 
+  details : {
+    title : string,
+    text : string
+  }
+
   constructor () {  
     this.scene = new Scene();
     this.loader = new GLTFLoader();
@@ -51,6 +56,11 @@ export class AppComponent implements OnInit {
 
         this.scene.environment = texture;
       });
+
+    this.details = {
+      title: "",
+      text: ""
+    }
   }
   
   ngOnInit(): void {
@@ -114,6 +124,8 @@ export class AppComponent implements OnInit {
 
   private onDocumentMouseDown( event: any ) {
     // alert (this.outlinePass?.selectedObjects[0].name);
+    this.details.title = this.outlinePass?.selectedObjects[0].name ?? "";
+    console.log(this.details.title);
   }
 
   private onDocumentMouseHover( event: any ) {
