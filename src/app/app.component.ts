@@ -23,7 +23,6 @@ export class AppComponent implements OnInit {
   private controls? : OrbitControls;
   private raycaster : Raycaster;
 
-  //test me daddy
   private composer? : EffectComposer;
   private outlinePass? : OutlinePass;
 
@@ -45,13 +44,6 @@ export class AppComponent implements OnInit {
 
         this.scene.background = texture;
       });
-    // // new TextureLoader()
-    // //   .load('assets/light.jpg', texture => {
-    // //     texture.mapping = EquirectangularReflectionMapping;
-
-    // //     // this.scene.background = texture;
-    // //     this.scene.environment = texture;
-    // //   });
     new RGBELoader()
       .setDataType(FloatType)
       .load('assets/light.hdr', texture => {
@@ -71,19 +63,20 @@ export class AppComponent implements OnInit {
       // antialias: true
     });
     this.renderer.outputEncoding = sRGBEncoding;
-    this.renderer.setPixelRatio(3);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.8;
 
     this.controls = new OrbitControls(this.camera, canvas);
+    this.controls.enablePan = false;
     this.controls.update();
 
     //test
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.outlinePass = new OutlinePass( new Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
-    this.outlinePass.visibleEdgeColor.setHex(0xb00020);
+    this.outlinePass.visibleEdgeColor.setHex(0xffffff);
     this.outlinePass.edgeStrength = 4;
     this.composer.addPass(this.outlinePass);
     
@@ -120,7 +113,7 @@ export class AppComponent implements OnInit {
   }
 
   private onDocumentMouseDown( event: any ) {
-    alert (this.outlinePass?.selectedObjects[0].name);
+    // alert (this.outlinePass?.selectedObjects[0].name);
   }
 
   private onDocumentMouseHover( event: any ) {
