@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import { ACESFilmicToneMapping, AmbientLight, Camera, EquirectangularReflectionMapping, FloatType, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, TextureLoader, Vector2, WebGLRenderer } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
@@ -7,13 +7,14 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ModelConfig } from './modelConfig';
-import { Details } from '../details/details';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class ModelService {
+  public partSelect: EventEmitter<string>;
+
   private modelLoader : GLTFLoader;
   private rgbeLoader : RGBELoader;
   private textureLoader : TextureLoader;
@@ -27,7 +28,10 @@ export class ModelService {
   private model? : Object3D;
   private parts : Object3D[];
 
+
   constructor() {
+    this.partSelect = new EventEmitter<string>();
+    
     this.modelLoader = new GLTFLoader();
     this.rgbeLoader = new RGBELoader().setDataType(FloatType);
     this.textureLoader = new TextureLoader();
@@ -39,25 +43,22 @@ export class ModelService {
     this.parts = [];
   }
 
-  public createModelView(canvas: HTMLCanvasElement, config: ModelConfig): Details {
-    this.scene.clear();
-    this.setupLighting();
-    this.camera.position.setZ(config.distanceFromModel);
-
+  public createModelView(canvas: HTMLCanvasElement, config: ModelConfig) {
     const renderer = this.setupRenderer(canvas, config);
     const outlinePass = this.setupOutlinePass(config);
-    const details: Details = {
-      title: "",
-      text: ""
-    };
 
     this.controls = this.setupControls(canvas);
     this.composer = this.setupComposer(renderer, outlinePass);
 
+    this.initScene(config);
     this.loadModel(config);
-    this.setupDomEvents(outlinePass, details);
+    this.setupDomEvents(outlinePass);
+   }
 
-    return details;
+   private initScene(config: ModelConfig) {
+    this.scene.clear();
+    this.setupLighting();
+    this.camera.position.setZ(config.distanceFromModel);
    }
 
    private setupLighting() {
@@ -143,13 +144,15 @@ export class ModelService {
     this.composer?.render();
    }
 
-   private setupDomEvents(outlinePass: OutlinePass, details: Details) {
+   private setupDomEvents(outlinePass: OutlinePass) {
     document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event, outlinePass), false );
-    document.addEventListener( 'mousedown', () => this.onDocumentMouseDown(details, outlinePass), false );
+    document.addEventListener( 'mousedown', () => this.onDocumentMouseDown(outlinePass), false );
    }
 
-   private onDocumentMouseDown(details: Details, outlinePass: OutlinePass) {
-    details.title = outlinePass.selectedObjects[0].name ?? "";
+   private onDocumentMouseDown(outlinePass: OutlinePass) {
+     if (outlinePass.selectedObjects.length) {
+       this.partSelect.emit(outlinePass.selectedObjects[0].name);
+     }
   }
 
   private onDocumentMouseHover(event: any, outlinePass: OutlinePass) {

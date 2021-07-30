@@ -13,7 +13,7 @@ export class AppComponent implements OnInit {
     distanceFromModel: 5,
     modelPath: 'assets/oil_purifier_DE_second.glb',
     modelHeight: 1.5,
-    onModelLoadProgress: console.log,
+    onModelLoadProgress: (xhr) => console.log(xhr.loaded / xhr.total * 100),
     onModelLoadError: console.error
   };
 
@@ -23,14 +23,22 @@ export class AppComponent implements OnInit {
     this.details = {
       title: "",
       text: ""
-    }
+    };
   }
   
   ngOnInit(): void { 
     const canvas = <HTMLCanvasElement> document.querySelector('#view');
+
     this.modelService.setHdrEnvironment('assets/light.hdr');
     this.modelService.setLdrBackground('assets/env.jpg');
+    this.modelService.createModelView(canvas, this.config);
+    
+    this.modelService.partSelect.subscribe(part => this.onPartSelect(part));
+  }
 
-    this.details = this.modelService.createModelView(canvas, this.config);
+  onPartSelect(selected: string) {
+    console.log(this.details);
+    this.details.title = selected;
+    console.log(selected);
   }
 }
