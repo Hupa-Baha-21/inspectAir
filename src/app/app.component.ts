@@ -10,11 +10,13 @@ import { ModelConfig } from './services/model/modelConfig';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  loadingPercentage = 0;
+
   private config: ModelConfig = {
     distanceFromModel: 5,
     modelPath: 'assets/oil_purifier_DE_second.glb',
     modelHeight: 1.5,
-    onModelLoadProgress: (xhr) => console.log(xhr.loaded / xhr.total * 100),
+    onModelLoadProgress: (xhr) => this.loadingPercentage = xhr.loaded / xhr.total * 100,
     onModelLoadError: console.error
   };
 
@@ -34,10 +36,8 @@ export class AppComponent implements OnInit {
     this.modelService.setLdrBackground('assets/env.jpg');
     this.modelService.createModelView(canvas, this.config);
     
-    this.modelService.partSelect.subscribe(part => this.onPartSelect(part));
-  }
-
-  onPartSelect(selected: string) {
-    this.details = this.detailsService.retrieveDetails(selected);
+    this.modelService.partSelect.subscribe(part => 
+      this.details = this.detailsService.retrieveDetails(part)
+    );
   }
 }
