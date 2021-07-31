@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Details } from './details/details';
+import { Details } from './services/details/details';
+import { DetailsService } from './services/details/details.service';
 import { ModelService } from './services/model/model.service';
 import { ModelConfig } from './services/model/modelConfig';
 
@@ -19,7 +20,7 @@ export class AppComponent implements OnInit {
 
   details: Details;
 
-  constructor (private modelService: ModelService) {  
+  constructor (private modelService: ModelService, private detailsService: DetailsService) {  
     this.details = {
       title: "",
       text: ""
@@ -37,8 +38,6 @@ export class AppComponent implements OnInit {
   }
 
   onPartSelect(selected: string) {
-    console.log(this.details);
-    this.details.title = selected;
-    console.log(selected);
+    this.details = this.detailsService.retrieveDetails(selected);
   }
 }
