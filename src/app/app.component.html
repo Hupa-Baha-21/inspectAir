@@ -1,2 +1,5 @@
+<div class="progress-container" *ngIf="this.loadingPercentage < 100">
+    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+</div>
 <canvas id="view"></canvas>
-<app-details [text]="this.details.text" [title]="this.details.title"></app-details>
+<app-details [details]="this.details"></app-details>

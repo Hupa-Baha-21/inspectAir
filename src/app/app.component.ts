@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Details } from './details/details';
-import { ModelService } from './services/model.service';
-import { ModelConfig } from './services/modelConfig';
+import { Details } from './services/details/details';
+import { DetailsService } from './services/details/details.service';
+import { ModelService } from './services/model/model.service';
+import { ModelConfig } from './services/model/modelConfig';
 
 @Component({
   selector: 'app-root',
@@ -9,17 +10,19 @@ import { ModelConfig } from './services/modelConfig';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  loadingPercentage = 0;
+
   private config: ModelConfig = {
     distanceFromModel: 5,
     modelPath: 'assets/oil_purifier_DE_second.glb',
     modelHeight: 1.5,
-    onModelLoadProgress: (xhr) => console.log(xhr.loaded / xhr.total * 100),
+    onModelLoadProgress: (xhr) => this.loadingPercentage = xhr.loaded / xhr.total * 100,
     onModelLoadError: console.error
   };
 
   details: Details;
 
-  constructor (private modelService: ModelService) {  
+  constructor (private modelService: ModelService, private detailsService: DetailsService) {  
     this.details = {
       title: "",
       text: ""
@@ -33,12 +36,8 @@ export class AppComponent implements OnInit {
     this.modelService.setLdrBackground('assets/env.jpg');
     this.modelService.createModelView(canvas, this.config);
     
-    this.modelService.partSelect.subscribe(part => this.onPartSelect(part));
-  }
-
-  onPartSelect(selected: string) {
-    console.log(this.details);
-    this.details.title = selected;
-    console.log(selected);
+    this.modelService.partSelect.subscribe(part => 
+      this.details = this.detailsService.retrieveDetails(part)
+    );
   }
 }
