@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Details } from './details/details';
-import { ModelService } from './services/model.service';
-import { ModelConfig } from './services/modelConfig';
+import { ModelService } from './services/model/model.service';
+import { ModelConfig } from './services/model/modelConfig';
 
 @Component({
   selector: 'app-root',
