@@ -72,7 +72,7 @@ export class ModelService {
       alpha: true
     });
     renderer.outputEncoding = sRGBEncoding;
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(2.5);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = ACESFilmicToneMapping;
     renderer.toneMappingExposure = config.exposure ?? 1.6;
@@ -82,8 +82,10 @@ export class ModelService {
 
   private setupControls(canvas: HTMLCanvasElement): OrbitControls {
     const controls = new OrbitControls(this.camera, canvas);
-    controls.enablePan = false;
     controls.update();
+    controls.maxDistance = 15;
+    controls.minDistance = 2.2;
+    controls.enablePan = false;
 
     return controls;
   }
@@ -145,11 +147,11 @@ export class ModelService {
 
   private setupDomEvents(outlinePass: OutlinePass) {
     document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event, outlinePass), false );
-    document.addEventListener( 'mousedown', () => this.onDocumentMouseDown(outlinePass), false );
+    document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event, outlinePass), false );
   }
 
-  private onDocumentMouseDown(outlinePass: OutlinePass) {
-     if (outlinePass.selectedObjects.length) {
+  private onDocumentMouseDown(event: any, outlinePass: OutlinePass) {
+     if (outlinePass.selectedObjects.length && !event.button) {
        this.partSelect.emit(outlinePass.selectedObjects[0].name);
      }
   }
