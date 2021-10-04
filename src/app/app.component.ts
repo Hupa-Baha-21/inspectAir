@@ -13,7 +13,6 @@ export class AppComponent implements OnInit {
   loadingPercentage = 0;
 
   private config: ModelConfig = {
-    exposure: 2,
     distanceFromModel: 5,
     modelPath: 'assets/oil.glb',
     modelHeight: 1.5,
