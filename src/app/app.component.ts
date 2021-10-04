@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void { 
     const canvas = <HTMLCanvasElement> document.querySelector('#view');
 
-    // this.modelService.setHdrEnvironment('assets/light.hdr');
+    this.modelService.setHdrEnvironment('assets/light.hdr');
     // this.modelService.setLdrBackground('assets/env.jpg');
     this.modelService.createModelView(canvas, this.config);
     
