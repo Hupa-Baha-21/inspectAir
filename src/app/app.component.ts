@@ -13,6 +13,7 @@ export class AppComponent implements OnInit {
   loadingPercentage = 0;
 
   private config: ModelConfig = {
+    exposure: 2,
     distanceFromModel: 5,
     modelPath: 'assets/oil.glb',
     modelHeight: 1.5,
@@ -32,7 +33,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void { 
     const canvas = <HTMLCanvasElement> document.querySelector('#view');
 
-    this.modelService.setHdrEnvironment('assets/light.hdr');
+    // this.modelService.setHdrEnvironment('assets/light.hdr');
     // this.modelService.setLdrBackground('assets/env.jpg');
     this.modelService.createModelView(canvas, this.config);
     
