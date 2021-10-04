@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
   private config: ModelConfig = {
     exposure: 2,
     distanceFromModel: 5,
-    modelPath: 'assets/oil_purifier_DE_second.glb',
+    modelPath: 'assets/oil.glb',
     modelHeight: 1.5,
     onModelLoadProgress: (xhr) => this.loadingPercentage = xhr.loaded / xhr.total * 100,
     onModelLoadError: console.error
