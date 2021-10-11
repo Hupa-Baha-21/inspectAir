@@ -1,11 +1,12 @@
 import { EventEmitter, Injectable, Output } from '@angular/core';
-import { ACESFilmicToneMapping, AmbientLight, Camera, EquirectangularReflectionMapping, FloatType, LightProbe, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, TextureLoader, Vector2, WebGLRenderer } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, EquirectangularReflectionMapping, FloatType, LightProbe, Material, MaterialParameters, Mesh, MeshStandardMaterial, NormalBlending, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, TextureLoader, Vector2, WebGLRenderer } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js'
 import { ModelConfig } from './modelConfig';
 
 @Injectable({
@@ -85,7 +86,7 @@ export class ModelService {
     controls.update();
     controls.maxDistance = 15;
     controls.minDistance = 2.2;
-    controls.enablePan = false;
+    controls.panSpeed = 0.4;
 
     return controls;
   }
@@ -100,8 +101,10 @@ export class ModelService {
 
   private setupComposer(renderer: WebGLRenderer, outlinePass: OutlinePass): EffectComposer {
     const composer = new EffectComposer(renderer);
-    
-    composer.addPass(new RenderPass(this.scene, this.camera));
+    const pass = new RenderPass(this.scene, this.camera);
+    pass.clear = true;
+    composer.addPass(pass);
+    // composer.addPass(new SSAOPass(this.scene, this.camera))
     composer.addPass(outlinePass);
 
     return composer;
@@ -118,6 +121,20 @@ export class ModelService {
   private onModelLoad(gltf: GLTF, config: ModelConfig) {
     this.model = gltf.scene;
     this.model.position.setY(-config.modelHeight);
+    
+    this.model.traverse(node => {
+      try {
+        let mesh = node as Mesh;
+        let material = mesh.material as MeshStandardMaterial
+        // console.log((mesh.material as MeshStandardMaterial).roughness);
+        // console.log((mesh.material as MeshStandardMaterial).metalness);
+        material.roughness = 0.8;
+        material.metalness = 0;
+        material.color = new Color(0x000000);
+        // material.envMapIntensity = 0.3;
+      } catch (error) {
+      }
+    })
     
     this.scene.add(this.model);
     this.animate();
