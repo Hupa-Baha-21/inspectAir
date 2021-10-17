@@ -7,6 +7,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ModelConfig } from './modelConfig';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +29,6 @@ export class ModelService {
   private model? : Object3D;
   private parts : Object3D[];
 
-
   constructor() {
     this.partSelect = new EventEmitter<string>();
     
@@ -43,7 +43,9 @@ export class ModelService {
     this.parts = [];
   }
 
-  public createModelView(canvas: HTMLCanvasElement, config: ModelConfig) {
+  public createModelView(canvas: HTMLCanvasElement, config: ModelConfig): Observable<boolean> {
+    let isLoaded = new BehaviorSubject<boolean>(false);
+
     this.initScene(config);
 
     const renderer = this.setupRenderer(canvas, config);
@@ -52,8 +54,10 @@ export class ModelService {
     this.composer = this.setupComposer(renderer, outlinePass);
     this.controls = this.setupControls(canvas);
 
-    this.loadModel(config);
+    this.loadModel(config, isLoaded);
     this.setupDomEvents(outlinePass);
+
+    return isLoaded;
   }
 
   private initScene(config: ModelConfig) {
@@ -67,7 +71,7 @@ export class ModelService {
       alpha: true
     });
     renderer.outputEncoding = sRGBEncoding;
-    renderer.setPixelRatio(2.5);
+    renderer.setPixelRatio(2);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = ACESFilmicToneMapping;
     renderer.toneMappingExposure = 2; // for outline
@@ -102,21 +106,24 @@ export class ModelService {
     return composer;
   }
 
-  private loadModel(config: ModelConfig) {
+  private loadModel(config: ModelConfig, isLoaded: BehaviorSubject<boolean>) {
     this.modelLoader.load(config.modelPath, 
-    gltf =>  this.onModelLoad(gltf, config), 
+    gltf =>  this.onModelLoad(gltf, config, isLoaded), 
       config.onModelLoadProgress, 
       config.onModelLoadError
     );
   }
 
-  private onModelLoad(gltf: GLTF, config: ModelConfig) {
+  private onModelLoad(gltf: GLTF, config: ModelConfig, isLoaded: BehaviorSubject<boolean>) {
     this.model = gltf.scene;
     this.model.position.setY(-config.modelHeight);
         
     this.scene.add(this.model);
     this.animate();
     this.parts = this.extractChildren(this.model);
+
+    isLoaded.next(true);
+    isLoaded.complete();
   }
 
   private extractChildren(model : Object3D) : Object3D[] {
