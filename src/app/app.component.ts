@@ -16,7 +16,11 @@ export class AppComponent implements OnInit {
     distanceFromModel: 5,
     modelPath: 'assets/oil.glb',
     modelHeight: 1.5,
-    onModelLoadProgress: (xhr) => this.loadingPercentage = xhr.loaded / xhr.total * 100,
+    onModelLoadProgress: (xhr) => {
+      this.loadingPercentage = xhr.loaded / xhr.total * 100;
+      console.log(xhr.loaded);
+      console.log(xhr.total);
+    },
     onModelLoadError: console.error
   };
 

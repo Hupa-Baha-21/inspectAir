@@ -18,7 +18,7 @@
     width: 13px;
     height: 13px;
     border-radius: 50%;
-    background: #fcf;
+    background: white;
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 
@@ -73,7 +73,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 0;
+    z-index: -3;
+    background-color: #808080;
 }
 
 .container {

@@ -52,8 +52,6 @@ export class ModelService {
     this.composer = this.setupComposer(renderer, outlinePass);
     this.controls = this.setupControls(canvas);
 
-    this.setHdrEnvironment("assets/light1.hdr");
-
     this.loadModel(config);
     this.setupDomEvents(outlinePass);
   }
