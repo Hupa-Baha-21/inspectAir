@@ -35,7 +35,6 @@ export class AppComponent implements OnInit {
     this.modelService.setHdrEnvironment('assets/light1.hdr');
     // this.modelService.setLdrBackground('assets/env.jpg');
     this.modelService.createModelView(canvas, this.config);
-    
     this.modelService.partSelect.subscribe(part => 
       this.details = this.detailsService.retrieveDetails(part)
     );
