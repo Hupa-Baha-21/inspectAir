@@ -1,11 +1,11 @@
-import { EventEmitter, Injectable, Output } from '@angular/core';
-import { ACESFilmicToneMapping, AmbientLight, Camera, EquirectangularReflectionMapping, FloatType, LightProbe, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, TextureLoader, Vector2, WebGLRenderer } from 'three';
+import { EventEmitter, Injectable } from '@angular/core';
+import { ACESFilmicToneMapping, Camera, EquirectangularReflectionMapping, Object3D, PerspectiveCamera, Raycaster, Scene, sRGBEncoding, TextureLoader, Vector2, WebGLRenderer } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ModelConfig } from './modelConfig';
 
 @Injectable({
@@ -33,7 +33,7 @@ export class ModelService {
     this.partSelect = new EventEmitter<string>();
     
     this.modelLoader = new GLTFLoader();
-    this.rgbeLoader = new RGBELoader().setDataType(FloatType);
+    this.rgbeLoader = new RGBELoader();
     this.textureLoader = new TextureLoader();
 
     this.scene = new Scene();
@@ -44,26 +44,23 @@ export class ModelService {
   }
 
   public createModelView(canvas: HTMLCanvasElement, config: ModelConfig) {
+    this.initScene(config);
+
     const renderer = this.setupRenderer(canvas, config);
     const outlinePass = this.setupOutlinePass(config);
 
-    this.controls = this.setupControls(canvas);
     this.composer = this.setupComposer(renderer, outlinePass);
+    this.controls = this.setupControls(canvas);
 
-    this.initScene(config);
+    this.setHdrEnvironment("assets/light1.hdr");
+
     this.loadModel(config);
     this.setupDomEvents(outlinePass);
   }
 
   private initScene(config: ModelConfig) {
     this.scene.clear();
-    this.setupLighting();
     this.camera.position.setZ(config.distanceFromModel);
-  }
-
-  private setupLighting() {
-    const light = new AmbientLight(0xffffff, 1.5);
-    this.scene.add(light);
   }
 
   private setupRenderer(canvas: HTMLCanvasElement, config: ModelConfig) : WebGLRenderer {
@@ -75,7 +72,7 @@ export class ModelService {
     renderer.setPixelRatio(2.5);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = ACESFilmicToneMapping;
-    renderer.toneMappingExposure = config.exposure ?? 1.6;
+    renderer.toneMappingExposure = 2; // for outline
 
     return renderer;
   }
@@ -85,7 +82,7 @@ export class ModelService {
     controls.update();
     controls.maxDistance = 15;
     controls.minDistance = 2.2;
-    controls.enablePan = false;
+    controls.panSpeed = 0.4;
 
     return controls;
   }
@@ -95,13 +92,13 @@ export class ModelService {
     outlinePass.visibleEdgeColor.setHex(config.edgeColor ?? 0xffffff);
     outlinePass.edgeStrength = 4;
 
-    return outlinePass
+    return outlinePass;
   }
 
   private setupComposer(renderer: WebGLRenderer, outlinePass: OutlinePass): EffectComposer {
     const composer = new EffectComposer(renderer);
-    
-    composer.addPass(new RenderPass(this.scene, this.camera));
+    const pass = new RenderPass(this.scene, this.camera);
+    composer.addPass(pass);
     composer.addPass(outlinePass);
 
     return composer;
@@ -110,15 +107,15 @@ export class ModelService {
   private loadModel(config: ModelConfig) {
     this.modelLoader.load(config.modelPath, 
     gltf =>  this.onModelLoad(gltf, config), 
-    config.onModelLoadProgress, 
-    config.onModelLoadError
+      config.onModelLoadProgress, 
+      config.onModelLoadError
     );
   }
 
   private onModelLoad(gltf: GLTF, config: ModelConfig) {
     this.model = gltf.scene;
     this.model.position.setY(-config.modelHeight);
-    
+        
     this.scene.add(this.model);
     this.animate();
     this.parts = this.extractChildren(this.model);
@@ -186,6 +183,7 @@ export class ModelService {
     this.rgbeLoader.load(path, texture => {
       texture.mapping = EquirectangularReflectionMapping;
       this.scene.environment = texture;
+      texture.dispose();
     });
   }
 
@@ -193,6 +191,7 @@ export class ModelService {
     this.rgbeLoader.load(path, texture => {
       texture.mapping = EquirectangularReflectionMapping;
       this.scene.background = texture;
+      texture.dispose();
    });
   }
 
@@ -200,6 +199,7 @@ export class ModelService {
     this.textureLoader.load(path, texture => {
       texture.mapping = EquirectangularReflectionMapping;
       this.scene.environment = texture;
+      texture.dispose();
     });
   }
 
@@ -207,6 +207,7 @@ export class ModelService {
     this.textureLoader.load(path, texture => {
       texture.mapping = EquirectangularReflectionMapping;
       this.scene.background = texture;
+      texture.dispose();
     });
   }
 }
