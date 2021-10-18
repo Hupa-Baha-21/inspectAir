@@ -1,9 +1,7 @@
-<div class="top-container" *ngIf="this.isVisible">
-    <div class="bottom details-container" dir="rtl">
-        <div class="details">
-            <h3 class="title" (change)="this.isVisible=true">{{this.details.title}}</h3>
-            <p class="text" (change)="this.isVisible=true">{{this.details.text}}</p>
-        </div>
-        <button class="close-button" (click)="this.isVisible = false"><i class="bi bi-x"></i></button>
+<div class="details-container" dir="rtl" *ngIf="this.isVisible" (mouseenter)="this.modelService.disableRaycasting = true" (mouseleave)="this.modelService.disableRaycasting = false">
+    <div class="details">
+        <h3 class="title" (change)="this.isVisible=true">{{this.details.title}}</h3>
+        <p class="text" (change)="this.isVisible=true">{{this.details.text}}</p>
     </div>
+    <button class="close-button" (click)="this.isVisible = false"><i class="bi bi-x"></i></button>
 </div>

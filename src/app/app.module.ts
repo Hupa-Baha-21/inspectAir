@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
 
 import { AppComponent } from './app.component';
 import { DetailsComponent } from './details/details.component';
@@ -11,8 +10,7 @@ import { DetailsComponent } from './details/details.component';
     DetailsComponent
   ],
   imports: [
-    BrowserModule,
-    MatProgressBarModule
+    BrowserModule
   ],
   providers: [],
   bootstrap: [AppComponent]
