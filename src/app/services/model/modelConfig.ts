@@ -1,5 +1,4 @@
 export interface ModelConfig {
-    exposure?: number;
     edgeColor?: number;
 
     distanceFromModel: number;
