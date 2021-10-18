@@ -15,6 +15,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 
 export class ModelService {
   public partSelect: EventEmitter<string>;
+  public disableRaycasting: boolean;
 
   private modelLoader : GLTFLoader;
   private rgbeLoader : RGBELoader;
@@ -31,6 +32,7 @@ export class ModelService {
 
   constructor() {
     this.partSelect = new EventEmitter<string>();
+    this.disableRaycasting = false;
     
     this.modelLoader = new GLTFLoader();
     this.rgbeLoader = new RGBELoader();
@@ -148,8 +150,8 @@ export class ModelService {
   }
 
   private setupDomEvents(outlinePass: OutlinePass) {
-    document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event, outlinePass), false );
-    document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event, outlinePass), false );
+    document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event, outlinePass), false);
+    document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event, outlinePass), false);
   }
 
   private onDocumentMouseDown(event: any, outlinePass: OutlinePass) {
@@ -159,7 +161,11 @@ export class ModelService {
   }
 
   private onDocumentMouseHover(event: any, outlinePass: OutlinePass) {
-    if (!this.model || !this.parts) {
+    if (!this.model || !this.parts || this.disableRaycasting) {
+      if (this.disableRaycasting) {
+        outlinePass.selectedObjects = [];
+      }
+      
       return;
     }
 
