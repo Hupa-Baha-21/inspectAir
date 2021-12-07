@@ -1,2 +1,4 @@
 # quick-look
-Quick web app that allows you to inspect a model and read descriptions on specific parts
+Application for learning using 3d models
+
+![architecture](design/quicklook.svg)
