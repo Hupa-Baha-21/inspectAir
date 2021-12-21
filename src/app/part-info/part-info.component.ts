@@ -1,20 +1,17 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { Details } from '../services/details/details';
+import { IPartInfo } from '../services/part-info/IPartInfo';
 import { ModelService } from '../services/model/model.service';
 
 @Component({
-  selector: 'app-details',
-  templateUrl: './details.component.html',
-  styleUrls: ['./details.component.scss']
+  selector: 'app-part-info',
+  templateUrl: './part-info.component.html',
+  styleUrls: ['./part-info.component.scss']
 })
-export class DetailsComponent implements OnInit, OnChanges {
+export class PartInfoComponent implements OnInit, OnChanges {
   modelService: ModelService;
   isVisible = false;
 
-  @Input() details: Details = {
-    title: 'title',
-    text: 'text'
-  };
+  @Input() partInfo: IPartInfo | undefined;
 
   constructor(modelService: ModelService) {
     this.modelService = modelService;

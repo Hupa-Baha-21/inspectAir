@@ -1,7 +1,12 @@
 <div class="container">
     <div class="progress-container" *ngIf="!this.isLoaded">
-        <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+        <div class="lds-ellipsis">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
     <canvas id="view"></canvas>
-    <app-details [details]="this.details"></app-details>
+    <app-part-info [partInfo]="this.partInfo"></app-part-info>
 </div>

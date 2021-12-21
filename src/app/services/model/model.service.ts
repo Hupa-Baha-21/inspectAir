@@ -7,6 +7,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ModelConfig } from './modelConfig';
+import { PartInfoService } from '../part-info/part-info.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
@@ -17,29 +18,29 @@ export class ModelService {
   public partSelect: EventEmitter<string>;
   public disableRaycasting: boolean;
 
-  private modelLoader : GLTFLoader;
-  private rgbeLoader : RGBELoader;
-  private textureLoader : TextureLoader;
-  
-  private scene : Scene;
-  private camera : Camera;
-  private raycaster : Raycaster;
+  private modelLoader: GLTFLoader;
+  private rgbeLoader: RGBELoader;
+  private textureLoader: TextureLoader;
 
-  private controls? : OrbitControls;
-  private composer? : EffectComposer;
-  private model? : Object3D;
-  private parts : Object3D[];
+  private scene: Scene;
+  private camera: Camera;
+  private raycaster: Raycaster;
 
-  constructor() {
+  private controls?: OrbitControls;
+  private composer?: EffectComposer;
+  private model?: Object3D;
+  private parts: Object3D[];
+
+  constructor(private partInfoService: PartInfoService) {
     this.partSelect = new EventEmitter<string>();
     this.disableRaycasting = false;
-    
+
     this.modelLoader = new GLTFLoader();
     this.rgbeLoader = new RGBELoader();
     this.textureLoader = new TextureLoader();
 
     this.scene = new Scene();
-    this.camera = new PerspectiveCamera(75, window.innerWidth/window.innerHeight, .1, 30);
+    this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 30);
     this.raycaster = new Raycaster();
 
     this.parts = [];
@@ -67,7 +68,7 @@ export class ModelService {
     this.camera.position.setZ(config.distanceFromModel);
   }
 
-  private setupRenderer(canvas: HTMLCanvasElement, config: ModelConfig) : WebGLRenderer {
+  private setupRenderer(canvas: HTMLCanvasElement, config: ModelConfig): WebGLRenderer {
     const renderer = new WebGLRenderer({
       canvas: canvas,
       alpha: true
@@ -92,7 +93,7 @@ export class ModelService {
   }
 
   private setupOutlinePass(config: ModelConfig): OutlinePass {
-    const outlinePass = new OutlinePass( new Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
+    const outlinePass = new OutlinePass(new Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
     outlinePass.visibleEdgeColor.setHex(config.edgeColor ?? 0xffffff);
     outlinePass.edgeStrength = 4;
 
@@ -109,9 +110,9 @@ export class ModelService {
   }
 
   private loadModel(config: ModelConfig, isLoaded: BehaviorSubject<boolean>) {
-    this.modelLoader.load(config.modelPath, 
-    gltf =>  this.onModelLoad(gltf, config, isLoaded), 
-      config.onModelLoadProgress, 
+    this.modelLoader.load(config.modelPath,
+      gltf => this.onModelLoad(gltf, config, isLoaded),
+      config.onModelLoadProgress,
       config.onModelLoadError
     );
   }
@@ -119,7 +120,7 @@ export class ModelService {
   private onModelLoad(gltf: GLTF, config: ModelConfig, isLoaded: BehaviorSubject<boolean>) {
     this.model = gltf.scene;
     this.model.position.setY(-config.modelHeight);
-        
+
     this.scene.add(this.model);
     this.animate();
     this.parts = this.extractChildren(this.model);
@@ -128,9 +129,9 @@ export class ModelService {
     isLoaded.complete();
   }
 
-  private extractChildren(model : Object3D) : Object3D[] {
-    let children : Object3D[] = [];
-    
+  private extractChildren(model: Object3D): Object3D[] {
+    let children: Object3D[] = [];
+
     model.children.forEach(child => {
       if (child.children.length) {
         children = children.concat(this.extractChildren(child));
@@ -138,26 +139,26 @@ export class ModelService {
         children.push(child);
       }
     });
-    
+
     return children;
   }
 
   private animate() {
     requestAnimationFrame(this.animate.bind(this));
-    
+
     this.controls?.update();
     this.composer?.render();
   }
 
   private setupDomEvents(outlinePass: OutlinePass) {
-    document.addEventListener( 'mousemove', event => this.onDocumentMouseHover(event, outlinePass), false);
-    document.addEventListener( 'mousedown', event => this.onDocumentMouseDown(event, outlinePass), false);
+    document.addEventListener('mousemove', event => this.onDocumentMouseHover(event, outlinePass), false);
+    document.addEventListener('mousedown', event => this.onDocumentMouseDown(event, outlinePass), false);
   }
 
   private onDocumentMouseDown(event: any, outlinePass: OutlinePass) {
-     if (outlinePass.selectedObjects.length && !event.button) {
-       this.partSelect.emit(outlinePass.selectedObjects[0].name);
-     }
+    if (outlinePass.selectedObjects.length && !event.button) {
+      this.partSelect.emit(outlinePass.selectedObjects[0].name);
+    }
   }
 
   private onDocumentMouseHover(event: any, outlinePass: OutlinePass) {
@@ -165,25 +166,29 @@ export class ModelService {
       if (this.disableRaycasting) {
         outlinePass.selectedObjects = [];
       }
-      
+
       return;
     }
 
     event.preventDefault();
-    const mouseX = ( event.clientX / window.innerWidth ) * 2 - 1;
-    const mouseY = - ( event.clientY / window.innerHeight ) * 2 + 1;
-  
-    this.raycaster.setFromCamera({ x: mouseX, y: mouseY}, this.camera);
+    const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+    const mouseY = - (event.clientY / window.innerHeight) * 2 + 1;
 
-    const intersects = this.raycaster.intersectObjects( this.parts );
+    this.raycaster.setFromCamera({ x: mouseX, y: mouseY }, this.camera);
 
-    if ( intersects.length > 0 ) {
+    const intersects = this.raycaster.intersectObjects(this.parts);
+
+    if (intersects.length > 0) {
       const topObj = intersects[0].object;
 
-      if (topObj.parent !== this.model) {
-        outlinePass.selectedObjects = [topObj.parent ?? topObj];
+      if (topObj.parent !== null && (this.partInfoService.partInfoExists(topObj.name) || this.partInfoService.partInfoExists(topObj.parent.name))) {
+        if (topObj.parent !== this.model) {
+          outlinePass.selectedObjects = [topObj.parent ?? topObj];
+        } else {
+          outlinePass.selectedObjects = [topObj];
+        }
       } else {
-        outlinePass.selectedObjects = [topObj];
+        outlinePass.selectedObjects = [];
       }
     } else {
       outlinePass.selectedObjects = [];
@@ -203,7 +208,7 @@ export class ModelService {
       texture.mapping = EquirectangularReflectionMapping;
       this.scene.background = texture;
       texture.dispose();
-   });
+    });
   }
 
   public setLdrEnvironment(path: string) {
