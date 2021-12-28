@@ -1,10 +1,7 @@
 <div class="container">
     <div class="progress-container" *ngIf="!this.isLoaded">
         <div class="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+            <div *ngFor="let number of [].constructor(4)"></div>
         </div>
     </div>
     <canvas id="view"></canvas>
