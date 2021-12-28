@@ -1,7 +1,0 @@
-<div class="details-container" dir="rtl" *ngIf="this.isVisible" (mouseenter)="this.modelService.disableRaycasting = true" (mouseleave)="this.modelService.disableRaycasting = false">
-    <div class="details">
-        <h3 class="title">{{this.details.title}}</h3>
-        <p class="text">{{this.details.text}}</p>
-    </div>
-    <button class="close-button" (click)="this.isVisible = false; this.modelService.disableRaycasting = false"><i class="bi bi-x"></i></button>
-</div>
